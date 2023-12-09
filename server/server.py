@@ -40,7 +40,11 @@ def get_messages(room_id):
 def send_message():
     data = request.get_json()
 
-    print(data)
+    new_message = Message(content = data['content'], userId = data["userId"], roomId = data["roomId"])
+    db.session.add(new_message)
+    db.session.commit()
+
+    print("New message sent to room "+ data["roomId"] + " from " + data["userId"])
 
     return jsonify(data), 201
 
