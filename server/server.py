@@ -15,7 +15,13 @@ def get_messages(room_id):
     return jsonify(messages), 200
 
 
+@app.route("/send-message", methods=["POST"])
+def send_message():
+    data = request.get_json()
 
+    print(data)
+
+    return jsonify(data), 201
 
 
 if __name__ == "__main__":
