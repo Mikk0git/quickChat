@@ -26,14 +26,17 @@ def create_room():
 
 @app.route("/get-messages/<room_id>")
 def get_messages(room_id):
-    messages = {
-        "message1" : {
-            "text" : "dupa123",
-            "senderId" : "20133"
-        }
-    }
+    messages =  Message.query.filter_by(roomId=room_id).all()
 
-    return jsonify(messages), 200
+    formatted_messages = {}
+    for message in messages:
+        formatted_messages[message.id] = {
+            "text": message.content,
+            "userId": message.userId,
+            "date": message.date
+        }
+
+    return jsonify(formatted_messages), 200
 
 
 @app.route("/send-message", methods=["POST"])
