@@ -1,9 +1,15 @@
 from app import db
 from sqlalchemy.sql import func
 
+user_room = db.Table('user_room',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('room_id', db.String, db.ForeignKey('room.id'), primary_key=True)
+)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(30))
+    rooms = db.relationship('Room', secondary=user_room, backref='users')
     # messages = db.relationship('Message')
 
 class Room(db.Model):

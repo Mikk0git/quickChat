@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def create_database():
-    if not path.exists("db/" + DB_NAME):
+    if not path.exists("instance/" + DB_NAME):
         with app.app_context():
             db.create_all()
             print("Database created")
@@ -21,12 +21,23 @@ def create_room():
         password = data['password']
     new_room = Room(id = data['id'], password=generate_password_hash(password, method="pbkdf2:sha256"))
     db.session.add(new_room)
-    db.session.commit()
+
+
+    user = User.query.filter_by(username=data["username"]).first()
+    if not user:
+        user = User(username = data["username"])
+        db.session.add(user)
+        db.session.commit()
     
+    room = Room.query.get(data['id'])
+    if room:
+        user.rooms.append(room)
+        db.session.commit()
+        print("Room created and user added successfully ID: " +data['id'])
+        return jsonify({"message": "Room created and user added successfully ID: " +data['id']}), 200
+    else:
+        return jsonify({"message": "Room creation failed"}), 500
 
-    print("New room created ID: " +data['id'])
-
-    return jsonify(data), 201
 
 @app.route("/get-messages/<room_id>")
 def get_messages(room_id):
