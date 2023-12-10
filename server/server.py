@@ -15,7 +15,11 @@ def create_database():
 @app.route("/create-room", methods=["POST"])
 def create_room():
     data = request.get_json()
-    new_room = Room(id = data['id'], password=generate_password_hash(data['password'], method="pbkdf2:sha256"))
+    if data['password'] == "":
+        password = "1"
+    else:
+        password = data['password']
+    new_room = Room(id = data['id'], password=generate_password_hash(password, method="pbkdf2:sha256"))
     db.session.add(new_room)
     db.session.commit()
     
