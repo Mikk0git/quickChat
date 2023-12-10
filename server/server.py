@@ -1,7 +1,7 @@
 from app import app, db, DB_NAME
 from os import path
 from models import User, Message, Room
-from flask import request, jsonify
+from flask import request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -22,22 +22,34 @@ def create_room():
     new_room = Room(id = data['id'], password=generate_password_hash(password, method="pbkdf2:sha256"))
     db.session.add(new_room)
 
-
-    user = User.query.filter_by(username=data["username"]).first()
-    if not user:
-        user = User(username = data["username"])
-        db.session.add(user)
-        db.session.commit()
+    create_user(data["username"])
+    connect_user_to_room(data["username"],data["id"])
     
-    room = Room.query.get(data['id'])
+    room = db.session.get(Room, data['id'])
     if room:
-        user.rooms.append(room)
-        db.session.commit()
-        print("Room created and user added successfully ID: " +data['id'])
-        return jsonify({"message": "Room created and user added successfully ID: " +data['id']}), 200
+        print("Room created ID: " +data['id'])
+        return jsonify({"message": "Room created ID: " +data['id']}), 200
     else:
         return jsonify({"message": "Room creation failed"}), 500
 
+
+def create_user(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        user = User(username= username)
+        db.session.add(user)
+        db.session.commit()
+        print(f"New user added {username}")
+
+
+def connect_user_to_room(username, roomId):
+    user = User.query.filter_by(username=username).first()
+    room = db.session.get(Room, roomId)
+    if user and room:
+        user.rooms.append(room)
+        db.session.commit()
+        print(f"Connected user {username} to room {roomId}")
+    
 
 @app.route("/get-messages/<room_id>")
 def get_messages(room_id):
